@@ -11,6 +11,11 @@ namespace GenshinDailyHelper
     {
         static async Task Main(string[] args)
         {
+            for(var i = 0; i < args.Length; i++)
+            {
+                Console.WriteLine("args[" + i.ToString() + "]:" + args[i]);
+            }
+
             WriteLineUtil.WriteLineLog("开始签到");
 
             if (args.Length <= 0)
