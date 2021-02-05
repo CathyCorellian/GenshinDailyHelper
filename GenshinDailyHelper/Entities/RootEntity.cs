@@ -33,9 +33,8 @@ namespace GenshinDailyHelper.Entities
         /// 判断返回码并延迟
         /// </summary>
         /// <returns></returns>
-        public string CheckOutCodeAndSleep()
+        public string CheckOutCode()
         {
-            Task.Delay(3 * 1000).Wait();
 
             return Retcode switch
             {

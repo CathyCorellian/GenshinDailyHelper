@@ -105,7 +105,7 @@ namespace GenshinDailyHelper
                         "game_biz=hk4e_cn");
 
                 //检查第一步获取账号信息
-                rolesResult.CheckOutCodeAndSleep();
+                rolesResult.CheckOutCode();
 
                 int accountBindCount = rolesResult.Data.List.Count;
 
@@ -115,7 +115,7 @@ namespace GenshinDailyHelper
                 {
                     var userGameRolesListItem = rolesResult.Data.List[i];
 
-                    WriteLineUtil.WriteLineLog($"Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
+                    WriteLineUtil.WriteLineLog($"account{accountIndex}: Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
 
                     var roles = rolesResult.Data.List[i];
 
@@ -123,7 +123,7 @@ namespace GenshinDailyHelper
                         $"act_id={Config.ActId}&region={roles.Region}&uid={roles.GameUid}");
 
                     //检查第二步是否签到
-                    signDayResult.CheckOutCodeAndSleep();
+                    signDayResult.CheckOutCode();
 
                     WriteLineUtil.WriteLineLog($"account{accountIndex}: sign days:{signDayResult.Data.TotalSignDay}, today:{signDayResult.Data.Today}, status:{(signDayResult.Data.IsSign ? "signed" : "not signed")}");
 
@@ -140,7 +140,7 @@ namespace GenshinDailyHelper
                         await signClient.PostExecuteRequest<SignResultEntity>(Config.PostSignInfo,
                             jsonContent: new JsonContent(data));
 
-                    WriteLineUtil.WriteLineLog(result.CheckOutCodeAndSleep());
+                    WriteLineUtil.WriteLineLog($"account{accountIndex}: {result.CheckOutCode()}");
                 }
             }
             catch (GenShinException e)
