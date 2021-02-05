@@ -10,80 +10,72 @@ namespace GenshinDailyHelper
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            for(var i = 0; i < args.Length; i++)
-            {
-                var arg = args[i];
-                var buff = arg.ToCharArray();
-                for(var j = 0; j < buff.Length; j++)
-                {
-                    if (buff[j] == '#' || buff[j] == ';' || buff[j] == '=')
-                    {
-                    }
-                    else
-                    {
-                        buff[j] = '*';
-                    }
-                }
-
-                Console.WriteLine("args[" + i.ToString() + "]:" + new string(buff));
-            }
-
-            if (args.Length <= 0)
-            {
-                throw new InvalidOperationException("获取参数不对");
-            }
-
-
-
-            var cookieString = string.Join(' ', args);
-            var cookies = cookieString.Split("#");
-            var taskArray = new Task[cookies.Length];
-            var returnCodeSum = 0;
-
-            for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
-            {
-                returnCodeSum += await TaskProc(accountIndex, cookies[accountIndex]);
-
-                //threadArray[accountIndex] = new Thread(ThreadProc);
-                //threadArray[accountIndex].Start(new ThreadParameter() { cookie = cookies[accountIndex], accountIndex = accountIndex });
-            }
-
-
-            //bool isAnyTaskRunning;
-            //do
+            //for(var i = 0; i < args.Length; i++)
             //{
-            //    isAnyTaskRunning = false;
-
-            //    for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+            //    var arg = args[i];
+            //    var buff = arg.ToCharArray();
+            //    for(var j = 0; j < buff.Length; j++)
             //    {
-            //        if (taskArray[accountIndex] == null)
+            //        if (buff[j] == '#' || buff[j] == ';' || buff[j] == '=')
             //        {
             //        }
             //        else
             //        {
-            //            if (taskArray[accountIndex].IsCompleted)
-            //            {
-            //                WriteLineUtil.WriteLineLog("taskArray[" + accountIndex.ToString() + "]: done");
-            //                taskArray[accountIndex] = null;
-            //            }
-            //            else
-            //            {
-            //                isAnyTaskRunning = true;
-            //            }
+            //            buff[j] = '*';
             //        }
             //    }
 
-            //    Thread.Sleep(1);
-            //} while (isAnyTaskRunning);
+            //    Console.WriteLine("args[" + i.ToString() + "]:" + new string(buff));
+            //}
+
+            var cookies = string.Join(' ', args).Split("#");
+            var taskArray = new Task<int>[cookies.Length];
+
+            for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+            {
+                taskArray[accountIndex] = TaskProc(accountIndex, cookies[accountIndex]);
+            }
+
+
+            var returnCodeSum = 0;
+
+            while(true)
+            {
+                var isAnyTaskRunning = false;
+
+                for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+                {
+                    if (taskArray[accountIndex] == null)
+                    {
+                    }
+                    else
+                    {
+                        if (taskArray[accountIndex].IsCompleted)
+                        {
+                            var taskResult = taskArray[accountIndex].Result;
+                            returnCodeSum += taskResult;
+
+                            WriteLineUtil.WriteLineLog($"account{accountIndex}: done with return code {taskResult}");
+                            taskArray[accountIndex] = null;
+                            
+                        }
+                        else
+                        {
+                            isAnyTaskRunning = true;
+                        }
+                    }
+                }
+
+                if (!isAnyTaskRunning)
+                    break;
+
+                Thread.Sleep(10);
+            }
 
             WriteLineUtil.WriteLineLog("ending...");
-            Environment.Exit(returnCodeSum);
-
-
-
-
+            Environment.ExitCode = returnCodeSum;
         }
 
 
@@ -163,7 +155,6 @@ namespace GenshinDailyHelper
                 WriteLineUtil.WriteLineLog($"global exception {e}");
                 return 2;
             }
-
 
         }
     }
