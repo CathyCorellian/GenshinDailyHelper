@@ -30,112 +30,135 @@ namespace GenshinDailyHelper
                 Console.WriteLine("args[" + i.ToString() + "]:" + new string(buff));
             }
 
-            WriteLineUtil.WriteLineLog("开始签到");
+            //WriteLineUtil.WriteLineLog("开始签到");
 
             if (args.Length <= 0)
             {
                 throw new InvalidOperationException("获取参数不对");
             }
 
-            try
-            {
-                
 
-                var cookieString = string.Join(' ',args);
+
+                var cookieString = string.Join(' ', args);
                 var cookies = cookieString.Split("#");
-                var threadArray = new Thread[cookies.Length];
+                //var threadArray = new Thread[cookies.Length];
+                var taskArray = new Task[cookies.Length];
 
                 for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
                 {
-                    threadArray[accountIndex] = new Thread(ThreadProc);
-                    threadArray[accountIndex].Start(new ThreadParameter() { cookie = cookies[accountIndex], accountIndex = accountIndex });
+                    taskArray[accountIndex] = ThreadProc(accountIndex, cookies[accountIndex]);
+
+                    //threadArray[accountIndex] = new Thread(ThreadProc);
+                    //threadArray[accountIndex].Start(new ThreadParameter() { cookie = cookies[accountIndex], accountIndex = accountIndex });
                 }
 
-                for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+
+
+                bool isAnyTaskRunning;
+                do
                 {
-                    threadArray[accountIndex].Join();
-                    WriteLineUtil.WriteLineLog("threadArray[" + accountIndex.ToString() + "]: done");
+                    isAnyTaskRunning = false;
+
+                    for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+                    {
+                        if (taskArray[accountIndex] == null)
+                        {
+                        }
+                        else
+                        {
+                            if (taskArray[accountIndex].IsCompleted)
+                            {
+                                WriteLineUtil.WriteLineLog("taskArray[" + accountIndex.ToString() + "]: done");
+                                taskArray[accountIndex] = null;
+                            }
+                            else
+                            {
+                                isAnyTaskRunning = true;
+                            }
+                        }
+                    }
+
+
+
+                    Thread.Sleep(1);
+                } while (isAnyTaskRunning);
+
+
+
+            //抛出异常主动构建失败
+            WriteLineUtil.WriteLineLog("ending...");
+        }
+
+
+        static async Task ThreadProc(int accountIndex, string cookie)
+        {
+            //var threadParameter = (ThreadParameter)obj;
+            //var cookie = threadParameter.cookie;
+            //var accountIndex = threadParameter.accountIndex;
+
+
+            try
+            {
+
+                WriteLineUtil.WriteLineLog($"account{accountIndex}: starting");
+
+                var client = new GenShinClient(
+                    cookie);
+
+                var rolesResult =
+                    await client.GetExecuteRequest<UserGameRolesEntity>(Config.GetUserGameRolesByCookie,
+                        "game_biz=hk4e_cn");
+
+                //检查第一步获取账号信息
+                rolesResult.CheckOutCodeAndSleep();
+
+                int accountBindCount = rolesResult.Data.List.Count;
+
+                WriteLineUtil.WriteLineLog($"account{accountIndex}: bind {accountBindCount} characters");
+
+                for (int i = 0; i < accountBindCount; i++)
+                {
+                    WriteLineUtil.WriteLineLog(rolesResult.Data.List[i].ToString());
+
+                    var roles = rolesResult.Data.List[i];
+
+                    var signDayResult = await client.GetExecuteRequest<SignDayEntity>(Config.GetBbsSignRewardInfo,
+                        $"act_id={Config.ActId}&region={roles.Region}&uid={roles.GameUid}");
+
+                    //检查第二步是否签到
+                    signDayResult.CheckOutCodeAndSleep();
+
+                    WriteLineUtil.WriteLineLog(signDayResult.Data.ToString());
+
+                    var data = new
+                    {
+                        act_id = Config.ActId,
+                        region = roles.Region,
+                        uid = roles.GameUid
+                    };
+
+                    var signClient = new GenShinClient(cookie, true);
+
+                    var result =
+                        await signClient.PostExecuteRequest<SignResultEntity>(Config.PostSignInfo,
+                            jsonContent: new JsonContent(data));
+
+                    WriteLineUtil.WriteLineLog(result.CheckOutCodeAndSleep());
                 }
             }
             catch (GenShinException e)
             {
-                WriteLineUtil.WriteLineLog($"请求接口时出现异常{e.Message}");
+                WriteLineUtil.WriteLineLog($"excepting durning requesting interface {e.Message}");
                 Environment.ExitCode = 1;
             }
             catch (System.Exception e)
             {
-                WriteLineUtil.WriteLineLog($"出现意料以外的异常{e}");
+                WriteLineUtil.WriteLineLog($"global exception {e}");
                 Environment.ExitCode = 2;
             }
-            //抛出异常主动构建失败
-            WriteLineUtil.WriteLineLog("签到结束");
-        }
-
-
-        static async void ThreadProc(object obj)
-        {
-            var threadParameter = (ThreadParameter)obj;
-            var cookie = threadParameter.cookie;
-            var accountIndex = threadParameter.accountIndex;
-
-
-
-
-            WriteLineUtil.WriteLineLog($"开始签到 账号{accountIndex}");
-
-            var client = new GenShinClient(
-                cookie);
-
-            var rolesResult =
-                await client.GetExecuteRequest<UserGameRolesEntity>(Config.GetUserGameRolesByCookie,
-                    "game_biz=hk4e_cn");
-
-            //检查第一步获取账号信息
-            rolesResult.CheckOutCodeAndSleep();
-
-            int accountBindCount = rolesResult.Data.List.Count;
-
-            WriteLineUtil.WriteLineLog($"账号{accountIndex}绑定了{accountBindCount}个角色");
-
-            for (int i = 0; i < accountBindCount; i++)
-            {
-                WriteLineUtil.WriteLineLog(rolesResult.Data.List[i].ToString());
-
-                var roles = rolesResult.Data.List[i];
-
-                var signDayResult = await client.GetExecuteRequest<SignDayEntity>(Config.GetBbsSignRewardInfo,
-                    $"act_id={Config.ActId}&region={roles.Region}&uid={roles.GameUid}");
-
-                //检查第二步是否签到
-                signDayResult.CheckOutCodeAndSleep();
-
-                WriteLineUtil.WriteLineLog(signDayResult.Data.ToString());
-
-                var data = new
-                {
-                    act_id = Config.ActId,
-                    region = roles.Region,
-                    uid = roles.GameUid
-                };
-
-                var signClient = new GenShinClient(cookie, true);
-
-                var result =
-                    await signClient.PostExecuteRequest<SignResultEntity>(Config.PostSignInfo,
-                        jsonContent: new JsonContent(data));
-
-                WriteLineUtil.WriteLineLog(result.CheckOutCodeAndSleep());
-            }
 
 
         }
     }
 
-
-
-    class ThreadParameter
-    {
-        public string cookie;
-        public int accountIndex;
-    }
 }
