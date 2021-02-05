@@ -82,7 +82,8 @@ namespace GenshinDailyHelper
 
         static async Task<int> TaskProc(int taskIndex, string cookie)
         {
-            await Task.Delay(1);
+            await Task.Yield();
+
             try
             {
                 WriteLineUtil.WriteLineLog($"task{taskIndex}: GetExecuteRequest<UserGameRolesEntity>");
