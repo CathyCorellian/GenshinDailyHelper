@@ -35,7 +35,9 @@ namespace GenshinDailyHelper
 
             for (var taskIndex = 0; taskIndex < taskArray.Length; taskIndex++)
             {
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: scheduling");
                 taskArray[taskIndex] = TaskProc(taskIndex, cookies[taskIndex]);
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: scheduled");
             }
 
 
@@ -80,9 +82,10 @@ namespace GenshinDailyHelper
 
         static async Task<int> TaskProc(int taskIndex, string cookie)
         {
+            Thread.Sleep(1000);
             try
             {
-                WriteLineUtil.WriteLineLog($"task{taskIndex}: starting");
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: GetExecuteRequest<UserGameRolesEntity>");
 
                 var client = new GenShinClient(
                     cookie);
