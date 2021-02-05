@@ -30,8 +30,6 @@ namespace GenshinDailyHelper
                 Console.WriteLine("args[" + i.ToString() + "]:" + new string(buff));
             }
 
-            //WriteLineUtil.WriteLineLog("开始签到");
-
             if (args.Length <= 0)
             {
                 throw new InvalidOperationException("获取参数不对");
@@ -78,11 +76,8 @@ namespace GenshinDailyHelper
                         }
                     }
 
-
-
                     Thread.Sleep(1);
                 } while (isAnyTaskRunning);
-
 
 
             //抛出异常主动构建失败
@@ -128,7 +123,7 @@ namespace GenshinDailyHelper
                     //检查第二步是否签到
                     signDayResult.CheckOutCodeAndSleep();
 
-                    WriteLineUtil.WriteLineLog(signDayResult.Data.ToString());
+                    WriteLineUtil.WriteLineLog($"account{accountIndex}: sign days:{signDayResult.Data.TotalSignDay}, today:{signDayResult.Data.Today}, status:{(signDayResult.Data.IsSign ? "signed" : "not signed")}");
 
                     var data = new
                     {
