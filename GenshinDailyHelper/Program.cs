@@ -33,9 +33,9 @@ namespace GenshinDailyHelper
             var cookies = string.Join(' ', args).Split("#");
             var taskArray = new Task<int>[cookies.Length];
 
-            for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+            for (var taskIndex = 0; taskIndex < taskArray.Length; taskIndex++)
             {
-                taskArray[accountIndex] = TaskProc(accountIndex, cookies[accountIndex]);
+                taskArray[taskIndex] = TaskProc(taskIndex, cookies[taskIndex]);
             }
 
 
@@ -45,21 +45,20 @@ namespace GenshinDailyHelper
             {
                 var isAnyTaskRunning = false;
 
-                for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+                for (var taskIndex = 0; taskIndex < taskArray.Length; taskIndex++)
                 {
-                    if (taskArray[accountIndex] == null)
+                    if (taskArray[taskIndex] == null)
                     {
                     }
                     else
                     {
-                        if (taskArray[accountIndex].IsCompleted)
+                        if (taskArray[taskIndex].IsCompleted)
                         {
-                            var taskResult = taskArray[accountIndex].Result;
+                            var taskResult = taskArray[taskIndex].Result;
                             returnCodeSum += taskResult;
 
-                            WriteLineUtil.WriteLineLog($"account{accountIndex}: done with return code {taskResult}");
-                            taskArray[accountIndex] = null;
-                            
+                            WriteLineUtil.WriteLineLog($"task{taskIndex}: done with return code {taskResult}");
+                            taskArray[taskIndex] = null;
                         }
                         else
                         {
@@ -74,26 +73,19 @@ namespace GenshinDailyHelper
                 Thread.Sleep(10);
             }
 
-            WriteLineUtil.WriteLineLog("ending...");
+            WriteLineUtil.WriteLineLog("exiting");
             Environment.ExitCode = returnCodeSum;
         }
 
 
-        static async Task<int> TaskProc(int accountIndex, string cookie)
+        static async Task<int> TaskProc(int taskIndex, string cookie)
         {
-            //var threadParameter = (ThreadParameter)obj;
-            //var cookie = threadParameter.cookie;
-            //var accountIndex = threadParameter.accountIndex;
-
-
             try
             {
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: starting");
 
 
-                WriteLineUtil.WriteLineLog($"account{accountIndex}: starting");
-
-
-                if (accountIndex == 1)
+                if (taskIndex == 1)
                     throw new System.Exception("fake exception");
 
 
@@ -109,13 +101,13 @@ namespace GenshinDailyHelper
 
                 int accountBindCount = rolesResult.Data.List.Count;
 
-                WriteLineUtil.WriteLineLog($"account{accountIndex}: bind {accountBindCount} characters");
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: bind {accountBindCount} characters");
 
                 for (int i = 0; i < accountBindCount; i++)
                 {
                     var userGameRolesListItem = rolesResult.Data.List[i];
 
-                    WriteLineUtil.WriteLineLog($"account{accountIndex}: Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
+                    WriteLineUtil.WriteLineLog($"task{taskIndex}: Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
                     
                     var roles = rolesResult.Data.List[i];
 
@@ -125,7 +117,7 @@ namespace GenshinDailyHelper
                     //检查第二步是否签到
                     signDayResult.CheckOutCode();
 
-                    WriteLineUtil.WriteLineLog($"account{accountIndex}: sign days:{signDayResult.Data.TotalSignDay}, today:{signDayResult.Data.Today}, status:{(signDayResult.Data.IsSign ? "signed" : "not signed")}");
+                    WriteLineUtil.WriteLineLog($"task{taskIndex}: sign days:{signDayResult.Data.TotalSignDay}, today:{signDayResult.Data.Today}, status:{(signDayResult.Data.IsSign ? "signed" : "not signed")}");
 
                     var data = new
                     {
@@ -140,19 +132,19 @@ namespace GenshinDailyHelper
                         await signClient.PostExecuteRequest<SignResultEntity>(Config.PostSignInfo,
                             jsonContent: new JsonContent(data));
 
-                    WriteLineUtil.WriteLineLog($"account{accountIndex}: {result.CheckOutCode()}");
+                    WriteLineUtil.WriteLineLog($"task{taskIndex}: {result.CheckOutCode()}");
                 }
 
                 return 0;
             }
             catch (GenShinException e)
             {
-                WriteLineUtil.WriteLineLog($"excepting durning requesting interface {e.Message}");
+                WriteLineUtil.WriteLineLog($"excepting durning requesting interface {e.ToString()}");
                 return 1;
             }
             catch (System.Exception e)
             {
-                WriteLineUtil.WriteLineLog($"global exception {e}");
+                WriteLineUtil.WriteLineLog($"global exception {e.ToString()}");
                 return 2;
             }
 
