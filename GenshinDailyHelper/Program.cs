@@ -14,7 +14,7 @@ namespace GenshinDailyHelper
             for(var i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
-                var buff = new char[arg.Length];
+                var buff = arg.ToCharArray();
                 for(var j = 0; j < buff.Length; j++)
                 {
                     if (buff[j] == '#')
