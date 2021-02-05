@@ -13,7 +13,20 @@ namespace GenshinDailyHelper
         {
             for(var i = 0; i < args.Length; i++)
             {
-                Console.WriteLine("args[" + i.ToString() + "]:" + new string('v', args[i].Length));
+                var arg = args[i];
+                var buff = new char[arg.Length];
+                for(var j = 0; j < buff.Length; j++)
+                {
+                    if (buff[j] == '#')
+                    {
+                    }
+                    else
+                    {
+                        buff[j] = 'v';
+                    }
+                }
+
+                Console.WriteLine("args[" + i.ToString() + "]:" + new string(buff));
             }
 
             WriteLineUtil.WriteLineLog("开始签到");
