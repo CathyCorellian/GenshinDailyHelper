@@ -10,7 +10,7 @@ namespace GenshinDailyHelper
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             for(var i = 0; i < args.Length; i++)
             {
@@ -37,55 +37,57 @@ namespace GenshinDailyHelper
 
 
 
-                var cookieString = string.Join(' ', args);
-                var cookies = cookieString.Split("#");
-                //var threadArray = new Thread[cookies.Length];
-                var taskArray = new Task[cookies.Length];
+            var cookieString = string.Join(' ', args);
+            var cookies = cookieString.Split("#");
+            var taskArray = new Task[cookies.Length];
+            var returnCodeSum = 0;
 
-                for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
-                {
-                    taskArray[accountIndex] = ThreadProc(accountIndex, cookies[accountIndex]);
+            for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+            {
+                returnCodeSum += await TaskProc(accountIndex, cookies[accountIndex]);
 
-                    //threadArray[accountIndex] = new Thread(ThreadProc);
-                    //threadArray[accountIndex].Start(new ThreadParameter() { cookie = cookies[accountIndex], accountIndex = accountIndex });
-                }
-
-
-
-                bool isAnyTaskRunning;
-                do
-                {
-                    isAnyTaskRunning = false;
-
-                    for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
-                    {
-                        if (taskArray[accountIndex] == null)
-                        {
-                        }
-                        else
-                        {
-                            if (taskArray[accountIndex].IsCompleted)
-                            {
-                                WriteLineUtil.WriteLineLog("taskArray[" + accountIndex.ToString() + "]: done");
-                                taskArray[accountIndex] = null;
-                            }
-                            else
-                            {
-                                isAnyTaskRunning = true;
-                            }
-                        }
-                    }
-
-                    Thread.Sleep(1);
-                } while (isAnyTaskRunning);
+                //threadArray[accountIndex] = new Thread(ThreadProc);
+                //threadArray[accountIndex].Start(new ThreadParameter() { cookie = cookies[accountIndex], accountIndex = accountIndex });
+            }
 
 
-            //抛出异常主动构建失败
+            //bool isAnyTaskRunning;
+            //do
+            //{
+            //    isAnyTaskRunning = false;
+
+            //    for (var accountIndex = 0; accountIndex < cookies.Length; accountIndex++)
+            //    {
+            //        if (taskArray[accountIndex] == null)
+            //        {
+            //        }
+            //        else
+            //        {
+            //            if (taskArray[accountIndex].IsCompleted)
+            //            {
+            //                WriteLineUtil.WriteLineLog("taskArray[" + accountIndex.ToString() + "]: done");
+            //                taskArray[accountIndex] = null;
+            //            }
+            //            else
+            //            {
+            //                isAnyTaskRunning = true;
+            //            }
+            //        }
+            //    }
+
+            //    Thread.Sleep(1);
+            //} while (isAnyTaskRunning);
+
             WriteLineUtil.WriteLineLog("ending...");
+            Environment.Exit(returnCodeSum);
+
+
+
+
         }
 
 
-        static async Task ThreadProc(int accountIndex, string cookie)
+        static async Task<int> TaskProc(int accountIndex, string cookie)
         {
             //var threadParameter = (ThreadParameter)obj;
             //var cookie = threadParameter.cookie;
@@ -95,7 +97,13 @@ namespace GenshinDailyHelper
             try
             {
 
+
                 WriteLineUtil.WriteLineLog($"account{accountIndex}: starting");
+
+
+                if (accountIndex == 1)
+                    throw new System.Exception("fake exception");
+
 
                 var client = new GenShinClient(
                     cookie);
@@ -116,7 +124,7 @@ namespace GenshinDailyHelper
                     var userGameRolesListItem = rolesResult.Data.List[i];
 
                     WriteLineUtil.WriteLineLog($"account{accountIndex}: Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
-
+                    
                     var roles = rolesResult.Data.List[i];
 
                     var signDayResult = await client.GetExecuteRequest<SignDayEntity>(Config.GetBbsSignRewardInfo,
@@ -142,16 +150,18 @@ namespace GenshinDailyHelper
 
                     WriteLineUtil.WriteLineLog($"account{accountIndex}: {result.CheckOutCode()}");
                 }
+
+                return 0;
             }
             catch (GenShinException e)
             {
                 WriteLineUtil.WriteLineLog($"excepting durning requesting interface {e.Message}");
-                Environment.ExitCode = 1;
+                return 1;
             }
             catch (System.Exception e)
             {
                 WriteLineUtil.WriteLineLog($"global exception {e}");
-                Environment.ExitCode = 2;
+                return 2;
             }
 
 
