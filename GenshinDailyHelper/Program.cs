@@ -113,7 +113,9 @@ namespace GenshinDailyHelper
 
                 for (int i = 0; i < accountBindCount; i++)
                 {
-                    WriteLineUtil.WriteLineLog(rolesResult.Data.List[i].ToString());
+                    var userGameRolesListItem = rolesResult.Data.List[i];
+
+                    WriteLineUtil.WriteLineLog($"Nick:{userGameRolesListItem.Nickname}, Lv:{userGameRolesListItem.Level}, Area:{userGameRolesListItem.RegionName}");
 
                     var roles = rolesResult.Data.List[i];
 
