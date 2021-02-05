@@ -34,5 +34,5 @@ jobs:
       
     - name: Run
       env:
-        Cookie: ${{secrets.Cookie}}
-      run: dotnet run -p ./GenshinDailyHelper ${{secrets.Cookie}}
+        TOMO: ${{secrets.TOMO}}
+      run: dotnet run -p ./GenshinDailyHelper ${TOMO}
