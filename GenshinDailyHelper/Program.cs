@@ -17,12 +17,12 @@ namespace GenshinDailyHelper
                 var buff = arg.ToCharArray();
                 for(var j = 0; j < buff.Length; j++)
                 {
-                    if (buff[j] == '#')
+                    if (buff[j] == '#' || buff[j] == ';' || buff[j] == '=')
                     {
                     }
                     else
                     {
-                        buff[j] = 'v';
+                        buff[j] = '*';
                     }
                 }
 
