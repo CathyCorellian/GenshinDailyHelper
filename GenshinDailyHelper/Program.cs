@@ -84,11 +84,6 @@ namespace GenshinDailyHelper
             {
                 WriteLineUtil.WriteLineLog($"task{taskIndex}: starting");
 
-
-                if (taskIndex == 1)
-                    throw new System.Exception("fake exception");
-
-
                 var client = new GenShinClient(
                     cookie);
 
