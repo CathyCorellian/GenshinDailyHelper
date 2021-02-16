@@ -34,5 +34,5 @@ jobs:
       
     - name: Run
       env:
-        ARGSTEXT: ${{secrets.CC}}#${{secrets.YALU}}#${{secrets.JIENAN}}#${{secrets.YANBIN}}#${{secrets.LIANGGEN}}#${{secrets.WANGJUN}}
+        ARGSTEXT: ${{secrets.CC}}#${{secrets.YALU}}#${{secrets.JIENAN}}#${{secrets.YANBIN}}#${{secrets.LIANGGEN}}#${{secrets.WANGJUN}}#${{secrets.XIAOBA}}
       run: dotnet run -p ./GenshinDailyHelper ${ARGSTEXT}
