@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using GenshinDailyHelper.Client;
 using GenshinDailyHelper.Constant;
 using GenshinDailyHelper.Entities;
-using GenshinDailyHelper.Exception;
 
 namespace GenshinDailyHelper
 {
@@ -136,15 +135,10 @@ namespace GenshinDailyHelper
 
                 return 0;
             }
-            catch (GenShinException e)
-            {
-                WriteLineUtil.WriteLineLog($"excepting durning requesting interface {e.ToString()}");
-                return 1;
-            }
             catch (System.Exception e)
             {
-                WriteLineUtil.WriteLineLog($"global exception {e.ToString()}");
-                return 2;
+                WriteLineUtil.WriteLineLog($"task{taskIndex}: excepting durning requesting interface {e}");
+                return 1;
             }
 
         }

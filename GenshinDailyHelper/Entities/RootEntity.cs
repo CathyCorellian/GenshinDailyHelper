@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GenshinDailyHelper.Exception;
 using Newtonsoft.Json;
 
 namespace GenshinDailyHelper.Entities
@@ -40,7 +39,7 @@ namespace GenshinDailyHelper.Entities
             {
                 0 => "执行成功",
                 -5003 => $"{Message}",
-                _ => throw new GenShinException($"请求异常{Message}")
+                _ => throw new System.Exception($"请求异常, Retcode: ${Retcode}, Message: ${Message}")
             };
         }
 
